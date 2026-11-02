@@ -538,6 +538,21 @@ const EditModal = ({ open, channelId, onCancel, onOk }) => {
                   </Button>
                 </ButtonGroup>
               </Container>
+              <FormControl fullWidth sx={{ ...theme.typography.otherInput }}>
+                <InputLabel htmlFor="channel-model-name-prefix-label">{inputLabel.model_name_prefix}</InputLabel>
+                <OutlinedInput
+                  id="channel-model-name-prefix-label"
+                  label={inputLabel.model_name_prefix}
+                  type='text'
+                  value={values.model_name_prefix}
+                  name='model_name_prefix'
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  inputProps={{}}
+                  aria-describedby='helper-text-channel-model-name-prefix-label'
+                />
+                <FormHelperText id='helper-text-channel-model-name-prefix-label'> {inputPrompt.model_name_prefix} </FormHelperText>
+              </FormControl>
               {inputLabel.key && (
                 <>
                   <FormControl fullWidth error={Boolean(touched.key && errors.key)} sx={{ ...theme.typography.otherInput }}>

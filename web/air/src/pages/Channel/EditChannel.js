@@ -43,6 +43,7 @@ const EditChannel = (props) => {
         base_url: '',
         other: '',
         model_mapping: '',
+        model_name_prefix: '',
         system_prompt: '',
         models: [],
         auto_ban: 1,
@@ -513,6 +514,18 @@ const EditChannel = (props) => {
                           }}
                         />
                     </div>
+                    <div style={{ marginTop: 10 }}>
+                        <Typography.Text strong>模型名前缀：</Typography.Text>
+                    </div>
+                    <Input
+                      name='model_name_prefix'
+                      placeholder={'可空，为对外暴露的模型名添加前缀，例如 wb: 时模型 kimi-k3 将显示为 wb:kimi-k3'}
+                      onChange={value => {
+                          handleInputChange('model_name_prefix', value)
+                      }}
+                      value={inputs.model_name_prefix}
+                      autoComplete='new-password'
+                    />
                     <div style={{ marginTop: 10 }}>
                         <Typography.Text strong>模型重定向：</Typography.Text>
                     </div>

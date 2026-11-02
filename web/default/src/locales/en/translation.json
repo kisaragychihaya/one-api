@@ -102,6 +102,8 @@
       "models_placeholder": "Please select models supported by this channel",
       "model_mapping": "Model Mapping",
       "model_mapping_placeholder": "Optional, used to modify model names in request body. A JSON string where keys are request model names and values are target model names",
+      "model_name_prefix": "Model Name Prefix",
+      "model_name_prefix_placeholder": "Optional, adds a prefix to model names exposed to clients, e.g. with \"wb:\" model kimi-k3 will be shown as wb:kimi-k3",
       "system_prompt": "System Prompt",
       "system_prompt_placeholder": "Optional, used to force set system prompt. Use with custom model & model mapping. First create a unique custom model name above, then map it to a natively supported model",
       "proxy_url": "Proxy",

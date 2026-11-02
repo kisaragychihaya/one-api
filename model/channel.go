@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/songquanpeng/one-api/common/config"
 	"github.com/songquanpeng/one-api/common/helper"
@@ -32,6 +33,7 @@ type Channel struct {
 	Balance            float64 `json:"balance"` // in USD
 	BalanceUpdatedTime int64   `json:"balance_updated_time" gorm:"bigint"`
 	Models             string  `json:"models"`
+	ModelNamePrefix    *string `json:"model_name_prefix" gorm:"type:varchar(32);default:''"`
 	Group              string  `json:"group" gorm:"type:varchar(32);default:'default'"`
 	UsedQuota          int64   `json:"used_quota" gorm:"bigint;default:0"`
 	ModelMapping       *string `json:"model_mapping" gorm:"type:varchar(1024);default:''"`
@@ -111,14 +113,38 @@ func (channel *Channel) GetBaseURL() string {
 	return *channel.BaseURL
 }
 
-func (channel *Channel) GetModelMapping() map[string]string {
-	if channel.ModelMapping == nil || *channel.ModelMapping == "" || *channel.ModelMapping == "{}" {
-		return nil
+func (channel *Channel) GetModelName(modelName string) string {
+	// ModelNamePrefix is exposed to downstream clients, the actual model name is sent to upstream
+	if channel.ModelNamePrefix == nil || *channel.ModelNamePrefix == "" {
+		return modelName
 	}
+	prefix := strings.ReplaceAll(*channel.ModelNamePrefix, ",", "")
+	return prefix + modelName
+}
+
+func (channel *Channel) GetModelMapping() map[string]string {
 	modelMapping := make(map[string]string)
-	err := json.Unmarshal([]byte(*channel.ModelMapping), &modelMapping)
-	if err != nil {
-		logger.SysError(fmt.Sprintf("failed to unmarshal model mapping for channel %d, error: %s", channel.Id, err.Error()))
+	if channel.ModelNamePrefix != nil && *channel.ModelNamePrefix != "" {
+		for _, modelName := range strings.Split(channel.Models, ",") {
+			if modelName == "" {
+				continue
+			}
+			modelMapping[channel.GetModelName(modelName)] = modelName
+		}
+	}
+	if channel.ModelMapping != nil && *channel.ModelMapping != "" && *channel.ModelMapping != "{}" {
+		userMapping := make(map[string]string)
+		err := json.Unmarshal([]byte(*channel.ModelMapping), &userMapping)
+		if err != nil {
+			logger.SysError(fmt.Sprintf("failed to unmarshal model mapping for channel %d, error: %s", channel.Id, err.Error()))
+		} else {
+			// user-defined mapping takes precedence over the prefix mapping
+			for k, v := range userMapping {
+				modelMapping[k] = v
+			}
+		}
+	}
+	if len(modelMapping) == 0 {
 		return nil
 	}
 	return modelMapping

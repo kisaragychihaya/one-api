@@ -59,7 +59,7 @@ func (channel *Channel) AddAbilities() error {
 		for _, group := range groups_ {
 			ability := Ability{
 				Group:     group,
-				Model:     model,
+				Model:     channel.GetModelName(model),
 				ChannelId: channel.Id,
 				Enabled:   channel.Status == ChannelStatusEnabled,
 				Priority:  channel.Priority,

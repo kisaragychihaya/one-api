@@ -102,6 +102,8 @@
       "models_placeholder": "请选择该渠道所支持的模型",
       "model_mapping": "模型重定向",
       "model_mapping_placeholder": "此项可选，用于修改请求体中的模型名称，为一个 JSON 字符串，键为请求中模型名称，值为要替换的模型名称",
+      "model_name_prefix": "模型名前缀",
+      "model_name_prefix_placeholder": "此项可选，为对外暴露的模型名添加前缀，例如 wb: 时模型 kimi-k3 将显示为 wb:kimi-k3",
       "system_prompt": "系统提示词",
       "system_prompt_placeholder": "此项可选，用于强制设置给定的系统提示词，请配合自定义模型 & 模型重定向使用，首先创建一个唯一的自定义模型名称并在上面填入，之后将该自定义模型重定向映射到该渠道一个原生支持的模型",
       "proxy_url": "代理",

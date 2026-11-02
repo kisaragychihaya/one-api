@@ -45,6 +45,7 @@ const EditChannel = () => {
     base_url: '',
     other: '',
     model_mapping: '',
+    model_name_prefix: '',
     system_prompt: '',
     models: [],
     groups: ['default'],
@@ -529,6 +530,16 @@ const EditChannel = () => {
             )}
             {inputs.type !== 43 && (
               <>
+                <Form.Field>
+                  <Form.Input
+                    label={t('channel.edit.model_name_prefix')}
+                    placeholder={t('channel.edit.model_name_prefix_placeholder')}
+                    name='model_name_prefix'
+                    onChange={handleInputChange}
+                    value={inputs.model_name_prefix}
+                    autoComplete='new-password'
+                  />
+                </Form.Field>
                 <Form.Field>
                   <Form.TextArea
                     label={t('channel.edit.model_mapping')}
