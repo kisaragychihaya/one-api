@@ -1,0 +1,84 @@
+name: Build deploy image
+
+# Builds a self-contained Docker image (frontend embedded) and publishes it
+# as a rolling GitHub release asset (one-api-image.tar.gz) so servers behind
+# flaky networks can deploy via `docker load`.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  frontend:
+    name: Build frontend themes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: |
+          npm install --prefix web/default --no-audit --no-fund
+          npm install --prefix web/berry --no-audit --no-fund
+          npm install --prefix web/air --no-audit --no-fund
+
+      - name: Build themes
+        env:
+          DISABLE_ESLINT_PLUGIN: 'true'
+          REACT_APP_VERSION: ${{ github.sha }}
+        run: |
+          npm run build --prefix web/default
+          npm run build --prefix web/berry
+          npm run build --prefix web/air
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: web/build
+          retention-days: 7
+
+  image:
+    name: Build image and publish tarball
+    needs: frontend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: web/build
+
+      - name: Build Docker image
+        run: docker build -f Dockerfile.deploy -t one-api:custom .
+
+      - name: Export image as tar.gz
+        run: docker save one-api:custom | gzip > one-api-image.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: one-api-image
+          path: one-api-image.tar.gz
+          retention-days: 7
+
+      - name: Publish rolling deploy release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git tag -f deploy
+          git push -f origin deploy
+          if gh release view deploy >/dev/null 2>&1; then
+            gh release upload deploy one-api-image.tar.gz --clobber
+          else
+            gh release create deploy one-api-image.tar.gz \
+              --title "One API deploy image" \
+              --notes "Rolling build of main. Load with: gunzip -c one-api-image.tar.gz | docker load" \
+              --prerelease
+          fi
