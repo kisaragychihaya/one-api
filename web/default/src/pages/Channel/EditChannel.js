@@ -57,6 +57,7 @@ const EditChannel = () => {
   const [basicModels, setBasicModels] = useState([]);
   const [fullModels, setFullModels] = useState([]);
   const [customModel, setCustomModel] = useState('');
+  const [fetchingModels, setFetchingModels] = useState(false);
   const [config, setConfig] = useState({
     region: '',
     sk: '',
@@ -125,6 +126,38 @@ const EditChannel = () => {
     } catch (error) {
       showError(error.message);
     }
+  };
+
+  const fetchUpstreamModels = async () => {
+    if (inputs.key === '' && !isEdit) {
+      showInfo(t('channel.edit.messages.key_required'));
+      return;
+    }
+    setFetchingModels(true);
+    try {
+      let res = await API.post(`/api/channel/fetch_models`, {
+        id: isEdit ? parseInt(channelId) : 0,
+        type: inputs.type,
+        key: inputs.key,
+        base_url: inputs.base_url,
+        other: inputs.other,
+        config: JSON.stringify(config),
+      });
+      const { success, message, data } = res.data;
+      if (success) {
+        handleInputChange(null, { name: 'models', value: data });
+        showSuccess(
+          t('channel.edit.messages.fetch_models_success', {
+            count: data.length,
+          })
+        );
+      } else {
+        showError(message);
+      }
+    } catch (error) {
+      showError(error.message);
+    }
+    setFetchingModels(false);
   };
 
   const fetchGroups = async () => {
@@ -458,6 +491,13 @@ const EditChannel = () => {
                   }}
                 >
                   {t('channel.edit.buttons.fill_all')}
+                </Button>
+                <Button
+                  type={'button'}
+                  loading={fetchingModels}
+                  onClick={fetchUpstreamModels}
+                >
+                  {t('channel.edit.buttons.fetch_models')}
                 </Button>
                 <Button
                   type={'button'}

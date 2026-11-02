@@ -117,6 +117,7 @@
         "submit": "Submit",
         "fill_models": "Fill Related Models",
         "fill_all": "Fill All Models",
+        "fetch_models": "Fetch Models",
         "clear": "Clear All Models",
         "add_custom": "Add",
         "custom_placeholder": "Enter custom model name"
@@ -125,6 +126,8 @@
         "name_required": "Please enter channel name and key!",
         "models_required": "Please select at least one model!",
         "model_mapping_invalid": "Model mapping must be valid JSON format!",
+        "key_required": "Please enter the channel key first!",
+        "fetch_models_success": "Fetched {{count}} models",
         "update_success": "Channel updated successfully!",
         "create_success": "Channel created successfully!"
       },

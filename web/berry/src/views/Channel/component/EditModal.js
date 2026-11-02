@@ -78,6 +78,7 @@ const EditModal = ({ open, channelId, onCancel, onOk }) => {
   const [modelOptions, setModelOptions] = useState([]);
   const [batchAdd, setBatchAdd] = useState(false);
   const [basicModels, setBasicModels] = useState([]);
+  const [fetchingModels, setFetchingModels] = useState(false);
 
   const initChannel = (typeValue) => {
     if (typeConfig[typeValue]?.inputLabel) {
@@ -149,6 +150,34 @@ const EditModal = ({ open, channelId, onCancel, onOk }) => {
     } catch (error) {
       showError(error.message);
     }
+  };
+
+  const fetchUpstreamModels = async (values, setFieldValue) => {
+    if (values.key === '' && !channelId) {
+      showError('请先填写渠道密钥！');
+      return;
+    }
+    setFetchingModels(true);
+    try {
+      let res = await API.post('/api/channel/fetch_models', {
+        id: channelId ? parseInt(channelId) : 0,
+        type: values.type,
+        key: values.key,
+        base_url: values.base_url,
+        other: values.other,
+        config: JSON.stringify(values.config)
+      });
+      const { success, message, data } = res.data;
+      if (success) {
+        setFieldValue('models', initialModel(data));
+        showSuccess(`已获取 ${data.length} 个模型`);
+      } else {
+        showError(message);
+      }
+    } catch (error) {
+      showError(error.message);
+    }
+    setFetchingModels(false);
   };
 
   const submit = async (values, { setErrors, setStatus, setSubmitting }) => {
@@ -498,6 +527,14 @@ const EditModal = ({ open, channelId, onCancel, onOk }) => {
                     }}
                   >
                     填入所有模型
+                  </Button>
+                  <Button
+                    disabled={fetchingModels}
+                    onClick={() => {
+                      fetchUpstreamModels(values, setFieldValue);
+                    }}
+                  >
+                    获取模型
                   </Button>
                 </ButtonGroup>
               </Container>

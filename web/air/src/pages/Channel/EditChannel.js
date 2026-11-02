@@ -58,6 +58,7 @@ const EditChannel = (props) => {
     const [basicModels, setBasicModels] = useState([]);
     const [fullModels, setFullModels] = useState([]);
     const [customModel, setCustomModel] = useState('');
+    const [fetchingModels, setFetchingModels] = useState(false);
     const handleInputChange = (name, value) => {
         setInputs((inputs) => ({...inputs, [name]: value}));
         if (name === 'type' && inputs.models.length === 0) {
@@ -171,6 +172,33 @@ const EditChannel = (props) => {
         } catch (error) {
             showError(error.message);
         }
+    };
+
+    const fetchUpstreamModels = async () => {
+        if (inputs.key === '' && !isEdit) {
+            showInfo('请先填写渠道密钥！');
+            return;
+        }
+        setFetchingModels(true);
+        try {
+            let res = await API.post(`/api/channel/fetch_models`, {
+                id: isEdit ? parseInt(channelId) : 0,
+                type: inputs.type,
+                key: inputs.key,
+                base_url: inputs.base_url,
+                other: inputs.other
+            });
+            const {success, message, data} = res.data;
+            if (success) {
+                handleInputChange('models', data);
+                showSuccess(`已获取 ${data.length} 个模型`);
+            } else {
+                showError(message);
+            }
+        } catch (error) {
+            showError(error.message);
+        }
+        setFetchingModels(false);
     };
 
     const fetchGroups = async () => {
@@ -469,6 +497,7 @@ const EditChannel = (props) => {
                             <Button type='secondary' onClick={() => {
                                 handleInputChange('models', fullModels);
                             }}>填入所有模型</Button>
+                            <Button type='primary' loading={fetchingModels} onClick={fetchUpstreamModels}>获取模型</Button>
                             <Button type='warning' onClick={() => {
                                 handleInputChange('models', []);
                             }}>清除所有模型</Button>
